@@ -2,11 +2,11 @@ import { NextResponse } from 'next/server';
 
 export async function POST(
   request: Request,
-  { params }: { params: { poolId: string } }
+  { params }: { params: Promise<{ poolId: string }> }
 ) {
   try {
+    const { poolId } = await params;
     const body = await request.json();
-    const { poolId } = params;
     const { hostUserId, verified, notes } = body;
     
     // Mock success response

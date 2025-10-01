@@ -4,11 +4,11 @@ import { NextResponse } from 'next/server';
 // For now, using mock data
 export async function POST(
   request: Request,
-  { params }: { params: { poolId: string } }
+  { params }: { params: Promise<{ poolId: string }> }
 ) {
   try {
     const { userId } = await request.json();
-    const { poolId } = params;
+    const { poolId } = await params;
     
     if (!userId) {
       return NextResponse.json(
