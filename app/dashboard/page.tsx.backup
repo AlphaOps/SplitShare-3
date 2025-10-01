@@ -1,0 +1,475 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { NavBar } from '@/components/layout/NavBar';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { NeonButton } from '@/components/ui/NeonButton';
+import { 
+  TrendingUp, 
+  CreditCard, 
+  Calendar, 
+  Award, 
+  Users, 
+  Activity,
+  DollarSign,
+  Zap,
+  Clock,
+  CheckCircle,
+  XCircle,
+  ArrowUpRight,
+  ArrowDownRight,
+  Sparkles,
+  Target,
+  TrendingDown
+} from 'lucide-react';
+
+type UserProfile = {
+  id: string;
+  email: string;
+  name: string;
+  credits: number;
+  badges: string[];
+  preferences: {
+    genres: string[];
+    budget: number;
+    adTolerance: string;
+  };
+};
+
+type Slot = {
+  id: string;
+  userId: string;
+  start: string;
+  end: string;
+  subscriptionId: string;
+  status: string;
+  price: number;
+  isAdSupported: boolean;
+};
+
+type AIRecommendation = {
+  bundles: any[];
+  trending: string[];
+  personalized: string[];
+};
+
+export default function DashboardPage() {
+  const { slots, credits, badges } = useDashboard();
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [serverSlots, setServerSlots] = useState<Slot[]>([]);
+  const [recommendations, setRecommendations] = useState<AIRecommendation | null>(null);
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Authentication state
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check for stored token
+    const storedToken = localStorage.getItem('authToken');
+    if (storedToken) {
+      setToken(storedToken);
+      setIsAuthenticated(true);
+      fetchUserData(storedToken);
+    }
+  }, []);
+
+  const fetchUserData = async (authToken: string) => {
+    try {
+      setIsLoading(true);
+      
+      // Fetch user profile
+      const profileResponse = await fetch('/api/users/profile', {
+        headers: { Authorization: `Bearer ${authToken}` }
+      });
+      
+      if (profileResponse.ok) {
+        const profile = await profileResponse.json();
+        setUser(profile);
+      }
+
+      // Fetch user slots
+      const slotsResponse = await fetch('/api/slots', {
+        headers: { Authorization: `Bearer ${authToken}` }
+      });
+      
+      if (slotsResponse.ok) {
+        const slots = await slotsResponse.json();
+        setServerSlots(slots);
+      }
+
+      // Fetch AI recommendations
+      const recommendationsResponse = await fetch('/api/ai/recommendations', {
+        headers: { Authorization: `Bearer ${authToken}` }
+      });
+      
+      if (recommendationsResponse.ok) {
+        const recs = await recommendationsResponse.json();
+        setRecommendations(recs);
+      }
+
+      // Fetch leaderboard
+      const leaderboardResponse = await fetch('/api/gamification/leaderboard');
+      if (leaderboardResponse.ok) {
+        const leaderboard = await leaderboardResponse.json();
+        setLeaderboard(leaderboard);
+      }
+
+    } catch (error) {
+      setError('Failed to fetch dashboard data');
+      console.error('Dashboard error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem('authToken', data.token);
+        setToken(data.token);
+        setIsAuthenticated(true);
+        await fetchUserData(data.token);
+      } else {
+        setError('Login failed');
+      }
+    } catch (error) {
+      setError('Login failed');
+    }
+  };
+
+  const handleRegister = async (email: string, password: string, name: string) => {
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, name })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem('authToken', data.token);
+        setToken(data.token);
+        setIsAuthenticated(true);
+        await fetchUserData(data.token);
+      } else {
+        setError('Registration failed');
+      }
+    } catch (error) {
+      setError('Registration failed');
+    }
+  };
+
+  const createSlot = async (subscriptionId: string, start: string, end: string) => {
+    if (!token) return;
+
+    try {
+      const response = await fetch('/api/slots', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          subscriptionId,
+          start,
+          end,
+          isAdSupported: false
+        })
+      });
+
+      if (response.ok) {
+        const newSlot = await response.json();
+        setServerSlots([...serverSlots, newSlot]);
+      }
+    } catch (error) {
+      setError('Failed to create slot');
+    }
+  };
+
+  const earnCredits = async (amount: number, reason: string) => {
+    if (!token) return;
+
+    try {
+      const response = await fetch('/api/gamification/earn-credits', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ amount, reason })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (user) {
+          setUser({ ...user, credits: user.credits + data.creditsEarned });
+        }
+      }
+    } catch (error) {
+      setError('Failed to earn credits');
+    }
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <main className="px-6 py-16">
+        <div className="mx-auto max-w-md">
+          <h1 className="text-3xl font-bold text-center mb-8">SplitShare Dashboard</h1>
+          <LoginForm onLogin={handleLogin} onRegister={handleRegister} error={error} />
+        </div>
+      </main>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <main className="px-6 py-16">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-muted">Loading dashboard...</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="px-6 py-16">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Welcome back, {user?.name}!</h1>
+            <p className="text-muted">Manage your slots and discover new content</p>
+          </div>
+          <div className="text-right">
+            <p className="text-2xl font-bold text-accent">{user?.credits} Credits</p>
+            <p className="text-sm text-muted">{user?.badges.length} Badges</p>
+          </div>
+        </div>
+
+        {/* Quick Stats */}
+        <div className="grid gap-6 md:grid-cols-4 mb-8">
+          <GlassCard>
+            <h3 className="text-lg font-semibold mb-2">Active Slots</h3>
+            <p className="text-2xl font-bold text-primary">{serverSlots.filter(s => s.status === 'booked').length}</p>
+          </GlassCard>
+          <GlassCard>
+            <h3 className="text-lg font-semibold mb-2">Total Savings</h3>
+            <p className="text-2xl font-bold text-secondary">${serverSlots.reduce((sum, s) => sum + (s.price || 0), 0).toFixed(2)}</p>
+          </GlassCard>
+          <GlassCard>
+            <h3 className="text-lg font-semibold mb-2">Credits Earned</h3>
+            <p className="text-2xl font-bold text-accent">{user?.credits || 0}</p>
+          </GlassCard>
+          <GlassCard>
+            <h3 className="text-lg font-semibold mb-2">Badges</h3>
+            <p className="text-2xl font-bold text-primary">{user?.badges.length || 0}</p>
+          </GlassCard>
+        </div>
+
+        <div className="grid gap-8 lg:grid-cols-3">
+          {/* Active Slots */}
+          <div className="lg:col-span-2">
+            <GlassCard>
+              <h3 className="text-xl font-semibold mb-4">Your Active Slots</h3>
+              {serverSlots.length === 0 ? (
+                <p className="text-muted">No active slots. Create your first slot!</p>
+              ) : (
+                <div className="space-y-3">
+                  {serverSlots.map((slot) => (
+                    <div key={slot.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                      <div>
+                        <p className="font-medium">{slot.subscriptionId}</p>
+                        <p className="text-sm text-muted">
+                          {new Date(slot.start).toLocaleTimeString()} - {new Date(slot.end).toLocaleTimeString()}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold">${slot.price?.toFixed(2)}</p>
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          slot.status === 'booked' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
+                        }`}>
+                          {slot.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              <div className="mt-6">
+                <NeonButton onClick={() => createSlot('netflix', new Date().toISOString(), new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString())}>
+                  Book New Slot
+                </NeonButton>
+              </div>
+            </GlassCard>
+          </div>
+
+          {/* AI Recommendations */}
+          <div>
+            <GlassCard>
+              <h3 className="text-xl font-semibold mb-4">AI Recommendations</h3>
+              {recommendations ? (
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium mb-2">Trending</h4>
+                    <ul className="text-sm text-muted space-y-1">
+                      {recommendations.trending.slice(0, 3).map((item, idx) => (
+                        <li key={idx}>• {item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-medium mb-2">For You</h4>
+                    <ul className="text-sm text-muted space-y-1">
+                      {recommendations.personalized.slice(0, 3).map((item, idx) => (
+                        <li key={idx}>• {item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-muted">Loading recommendations...</p>
+              )}
+            </GlassCard>
+
+            {/* Leaderboard */}
+            <GlassCard className="mt-6">
+              <h3 className="text-xl font-semibold mb-4">Leaderboard</h3>
+              {leaderboard.length > 0 ? (
+                <div className="space-y-2">
+                  {leaderboard.slice(0, 5).map((user, idx) => (
+                    <div key={user._id} className="flex items-center justify-between">
+                      <span className="text-sm">{idx + 1}. {user.name}</span>
+                      <span className="text-sm font-semibold text-accent">{user.credits}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted">Loading leaderboard...</p>
+              )}
+            </GlassCard>
+          </div>
+        </div>
+
+        {/* Gamification Actions */}
+        <div className="mt-8">
+          <GlassCard>
+            <h3 className="text-xl font-semibold mb-4">Earn Credits</h3>
+            <div className="flex gap-4">
+              <NeonButton onClick={() => earnCredits(10, 'Daily login')}>
+                Daily Login (+10)
+              </NeonButton>
+              <NeonButton onClick={() => earnCredits(25, 'Slot sharing')}>
+                Share Slot (+25)
+              </NeonButton>
+              <NeonButton onClick={() => earnCredits(50, 'Watch ads')}>
+                Watch Ads (+50)
+              </NeonButton>
+            </div>
+          </GlassCard>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function LoginForm({ onLogin, onRegister, error }: {
+  onLogin: (email: string, password: string) => void;
+  onRegister: (email: string, password: string, name: string) => void;
+  error: string | null;
+}) {
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isLogin) {
+      onLogin(email, password);
+    } else {
+      onRegister(email, password, name);
+    }
+  };
+
+  return (
+    <GlassCard>
+      <h2 className="text-2xl font-bold mb-6 text-center">
+        {isLogin ? 'Sign In' : 'Sign Up'}
+      </h2>
+      
+      {error && (
+        <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded text-red-400 text-sm">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {!isLogin && (
+          <div>
+            <label className="block text-sm font-medium mb-2">Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+              required
+            />
+          </div>
+        )}
+        
+        <div>
+          <label className="block text-sm font-medium mb-2">Email</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+            required
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-2">Password</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+            required
+          />
+        </div>
+        
+        <NeonButton type="submit" className="w-full">
+          {isLogin ? 'Sign In' : 'Sign Up'}
+        </NeonButton>
+      </form>
+      
+      <p className="mt-4 text-center text-sm text-muted">
+        {isLogin ? "Don't have an account? " : "Already have an account? "}
+        <button
+          onClick={() => setIsLogin(!isLogin)}
+          className="text-primary hover:underline"
+        >
+          {isLogin ? 'Sign up' : 'Sign in'}
+        </button>
+      </p>
+    </GlassCard>
+  );
+}
+
+

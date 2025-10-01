@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0D0D0D;
+  --primary: #E50914;
+  --secondary: #1DB954;
+  --accent: #FFD700;
+  --text: #FFFFFF;
+  --muted: #B3B3B3;
+}
+
+html, body, #__next {
+  height: 100%;
+}
+
+body {
+  background: radial-gradient(1000px 600px at 20% -10%, rgba(229,9,20,0.12), transparent),
+              radial-gradient(1000px 600px at 80% 110%, rgba(29,185,84,0.12), transparent),
+              var(--background);
+  color: var(--text);
+}
+
+.glass {
+  background-image: theme('backgroundImage.glass');
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.glass-card {
+  @apply bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-neon;
+}
+
+.neon-button {
+  @apply px-6 py-3 rounded-lg font-bold text-white bg-primary hover:bg-primary/80 shadow-neon transition-all duration-300;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-out;
+}
+
+.animate-fade-in-delay {
+  animation: fadeIn 0.8s ease-out 0.1s both;
+}
+
+.animate-fade-in-delay-2 {
+  animation: fadeIn 0.8s ease-out 0.2s both;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.neon {
+  text-shadow: 0 0 8px rgba(229, 9, 20, 0.6);
+}
+
+.neon-ring {
+  box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.4), 0 0 20px rgba(229, 9, 20, 0.6);
+}
+
+/* Lenis base */
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+
