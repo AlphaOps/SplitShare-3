@@ -352,3 +352,15 @@ function VerifyEmailContent() {
     </main>
   );
 }
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={
+      <main className="relative min-h-screen bg-background flex items-center justify-center">
+        <Loader className="w-8 h-8 animate-spin text-primary" />
+      </main>
+    }>
+      <VerifyEmailContent />
+    </Suspense>
+  );
+}

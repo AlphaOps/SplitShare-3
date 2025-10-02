@@ -1,10 +1,14 @@
+'use client';
+
+import { use } from 'react';
 import { CheckoutFlow } from '@/components/checkout/CheckoutFlow';
 import { BottomNavBar } from '@/components/layout/BottomNavBar';
 
-export default function Page({ params }: { params: { id: string } }) {
+export default function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   // Mock data - replace with actual API call
   const subscription = {
-    id: params.id,
+    id: id,
     name: 'Spotify-6 Members-Marcos',
     logo: 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg',
     planType: 'Standard',
