@@ -1,7 +1,9 @@
 import { CheckoutFlow } from '@/components/checkout/CheckoutFlow';
 import { BottomNavBar } from '@/components/layout/BottomNavBar';
 
-export default function CheckoutPage({ params }: { params: { id: string } }) {
+type CheckoutPageProps = { params: { id: string } };
+
+export default async function CheckoutPage({ params }: CheckoutPageProps) {
   const { id } = params;
 
   // Mock data - replace with actual API call
