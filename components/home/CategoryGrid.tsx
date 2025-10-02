@@ -42,7 +42,8 @@ export function CategoryGrid({
       {/* Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
         {categories.map((category, index) => {
-          const Icon = typeof category.icon === 'string' ? null : category.icon;
+          const isIconString = typeof category.icon === 'string';
+          const Icon = isIconString ? null : category.icon;
           
           return (
             <motion.div
@@ -74,7 +75,7 @@ export function CategoryGrid({
                     {Icon ? (
                       <Icon className="w-8 h-8" />
                     ) : (
-                      <span className="text-3xl">{category.icon}</span>
+                      <span className="text-3xl">{isIconString ? category.icon as string : ''}</span>
                     )}
                   </div>
 

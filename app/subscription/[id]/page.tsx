@@ -1,15 +1,17 @@
 'use client';
 
+import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { SubscriptionDetails } from '@/components/subscriptions/SubscriptionDetails';
 import { BottomNavBar } from '@/components/layout/BottomNavBar';
 
-export default function SubscriptionDetailsPage({ params }: { params: { id: string } }) {
+export default function SubscriptionDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
+  const { id } = use(params);
 
   // Mock data - replace with actual API call
   const subscription = {
-    id: params.id,
+    id: id,
     serviceName: 'Netflix-Premium Plan- A',
     serviceLogo: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg',
     planName: 'Premium Plan',
@@ -24,13 +26,13 @@ export default function SubscriptionDetailsPage({ params }: { params: { id: stri
 
   const handleRaiseComplaint = () => {
     // Navigate to complaints page or open modal
-    router.push(`/complaints/new?subscriptionId=${params.id}`);
+    router.push(`/complaints/new?subscriptionId=${id}`);
   };
 
   const handleSendToVerification = async () => {
     // API call to send for verification
     try {
-      const response = await fetch(`/api/subscriptions/${params.id}/verify`, {
+      const response = await fetch(`/api/subscriptions/${id}/verify`, {
         method: 'POST'
       });
       

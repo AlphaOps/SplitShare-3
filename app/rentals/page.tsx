@@ -20,30 +20,31 @@ function RentalsContent() {
   const [rentals, setRentals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlatform, setSelectedPlatform] = useState('');
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
-    fetchRentals();
-  }, [selectedPlatform]);
-
-  const fetchRentals = async () => {
-    setLoading(true);
-    try {
-      const url = selectedPlatform 
-        ? `/api/rentals?platform=${selectedPlatform}`
-        : '/api/rentals';
-      const res = await fetch(url);
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
+    async function fetchRentals() {
+      setLoading(true);
+      try {
+        const url = selectedPlatform 
+          ? `/api/rentals?platform=${selectedPlatform}`
+          : '/api/rentals';
+        const res = await fetch(url);
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const data = await res.json();
+        setRentals(data.rentals || []);
+      } catch (error) {
+        console.error('Failed to fetch rentals:', error);
+        setRentals([]);
+      } finally {
+        setLoading(false);
       }
-      const data = await res.json();
-      setRentals(data.rentals || []);
-    } catch (error) {
-      console.error('Failed to fetch rentals:', error);
-      setRentals([]);
-    } finally {
-      setLoading(false);
     }
-  };
+    
+    fetchRentals();
+  }, [selectedPlatform, refreshTrigger]);
 
   const bookRental = async (rentalId: string) => {
     try {
@@ -59,7 +60,7 @@ function RentalsContent() {
       const data = await res.json();
       if (data.success) {
         alert(`Rental booked! Access until ${new Date(data.booking.endAt).toLocaleString()}`);
-        fetchRentals();
+        setRefreshTrigger(prev => prev + 1);
       } else {
         alert(data.error || 'Failed to book rental');
       }

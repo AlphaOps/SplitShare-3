@@ -27,6 +27,7 @@ function PoolsContent() {
 
   useEffect(() => {
     fetchPools();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPlatform]);
 
   const fetchPools = async () => {

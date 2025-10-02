@@ -1,15 +1,12 @@
-'use client';
-
-import { useRouter } from 'next/navigation';
 import { CheckoutFlow } from '@/components/checkout/CheckoutFlow';
 import { BottomNavBar } from '@/components/layout/BottomNavBar';
 
 export default function CheckoutPage({ params }: { params: { id: string } }) {
-  const router = useRouter();
+  const { id } = params;
 
   // Mock data - replace with actual API call
   const subscription = {
-    id: params.id,
+    id: id,
     name: 'Spotify-6 Members-Marcos',
     logo: 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg',
     planType: 'Standard',
@@ -20,18 +17,11 @@ export default function CheckoutPage({ params }: { params: { id: string } }) {
 
   const walletBalance = 0.0;
 
-  const handleComplete = () => {
-    // Navigate to success page or subscriptions
-    router.push('/my-subscriptions?status=pending');
-  };
-
   return (
     <>
       <CheckoutFlow
         subscription={subscription}
         walletBalance={walletBalance}
-        onBack={() => router.back()}
-        onComplete={handleComplete}
       />
       <BottomNavBar />
     </>

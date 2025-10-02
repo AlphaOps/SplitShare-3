@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft,
@@ -31,18 +32,15 @@ interface CheckoutFlowProps {
     platformFee: number;
   };
   walletBalance: number;
-  onBack?: () => void;
-  onComplete?: () => void;
 }
 
 type CheckoutStep = 'details' | 'payment' | 'verification';
 
 export function CheckoutFlow({
   subscription,
-  walletBalance,
-  onBack,
-  onComplete
+  walletBalance
 }: CheckoutFlowProps) {
+  const router = useRouter();
   const [step, setStep] = useState<CheckoutStep>('details');
   const [showDetails, setShowDetails] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
@@ -75,7 +73,7 @@ export function CheckoutFlow({
         }
       }).then(setQrCode);
     }
-  }, [step, grandTotal]);
+  }, [step, grandTotal, bankDetails.upiId]);
 
   // Countdown timer
   useEffect(() => {
@@ -126,7 +124,7 @@ export function CheckoutFlow({
     }
     setStep('verification');
     setTimeout(() => {
-      onComplete?.();
+      router.push('/my-subscriptions?status=pending');
     }, 2000);
   };
 
@@ -150,7 +148,7 @@ export function CheckoutFlow({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <motion.button
-                onClick={onBack}
+                onClick={() => router.back()}
                 whileHover={{ scale: 1.1, x: -5 }}
                 whileTap={{ scale: 0.9 }}
                 className="p-2 rounded-xl hover:bg-white/10 transition-all"

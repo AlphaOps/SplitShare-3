@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import clsx from 'clsx';
@@ -27,6 +27,11 @@ export function HeroCarousel({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
 
+  const handleNext = useCallback(() => {
+    setDirection(1);
+    setCurrentIndex((prev) => (prev + 1) % items.length);
+  }, [items.length]);
+
   // Auto-play functionality
   useEffect(() => {
     const timer = setInterval(() => {
@@ -34,12 +39,7 @@ export function HeroCarousel({
     }, autoPlayInterval);
 
     return () => clearInterval(timer);
-  }, [currentIndex]);
-
-  const handleNext = () => {
-    setDirection(1);
-    setCurrentIndex((prev) => (prev + 1) % items.length);
-  };
+  }, [autoPlayInterval, handleNext]);
 
   const handlePrev = () => {
     setDirection(-1);
