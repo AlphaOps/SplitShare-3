@@ -1,14 +1,10 @@
 import { CheckoutFlow } from '@/components/checkout/CheckoutFlow';
 import { BottomNavBar } from '@/components/layout/BottomNavBar';
 
-type CheckoutPageProps = { params: { id: string } };
-
-export default async function CheckoutPage({ params }: CheckoutPageProps) {
-  const { id } = params;
-
+export default function Page({ params }: { params: { id: string } }) {
   // Mock data - replace with actual API call
   const subscription = {
-    id: id,
+    id: params.id,
     name: 'Spotify-6 Members-Marcos',
     logo: 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg',
     planType: 'Standard',
