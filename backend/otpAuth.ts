@@ -1,6 +1,6 @@
 /**
  * OTP Authentication API
- * Handles email OTP verification with MongoDB storage
+ * Handles email OTP verification with MongoDB storage and SendGrid
  */
 
 import { Router } from 'express';
