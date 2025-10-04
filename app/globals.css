@@ -15,11 +15,21 @@ html, body, #__next {
   height: 100%;
 }
 
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 body {
   background: radial-gradient(1000px 600px at 20% -10%, rgba(229,9,20,0.12), transparent),
               radial-gradient(1000px 600px at 80% 110%, rgba(29,185,84,0.12), transparent),
               var(--background);
   color: var(--text);
+  /* Prevent flickering */
+  -webkit-backface-visibility: hidden;
+  -moz-backface-visibility: hidden;
+  -webkit-transform: translate3d(0, 0, 0);
+  -moz-transform: translate3d(0, 0, 0);
 }
 
 .glass {

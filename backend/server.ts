@@ -14,6 +14,7 @@ import otpAuthRouter from './otpAuth';
 import poolsRouter from './poolsAPI';
 import rentalsRouter from './rentalsAPI';
 import instantRouter from './instantAPI';
+import stripePaymentsRouter from './stripePayments';
 
 const app = express();
 app.use(cors({
@@ -36,6 +37,7 @@ app.use('/api/auth', otpAuthRouter); // OTP authentication
 app.use('/api/pools', poolsRouter); // Standard Account Pools
 app.use('/api/rentals', rentalsRouter); // Rental Plans
 app.use('/api/instant', instantRouter); // Instant Gold Plans
+app.use('/api/payments', stripePaymentsRouter); // Stripe payments
 app.use('/api', advancedFeaturesRouter); // Auction, referral, analytics, parental, suggestions
 
 // Database connection

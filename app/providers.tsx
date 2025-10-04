@@ -5,18 +5,19 @@ import { AuthProvider } from '@/lib/auth/authContext';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    const lenis = new Lenis({
-      lerp: 0.1,
-      smoothWheel: true
-    });
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
-    return () => {
-      lenis?.destroy?.();
-    };
+    // Disable smooth scroll to fix flickering
+    // const lenis = new Lenis({
+    //   lerp: 0.1,
+    //   smoothWheel: true
+    // });
+    // function raf(time: number) {
+    //   lenis.raf(time);
+    //   requestAnimationFrame(raf);
+    // }
+    // requestAnimationFrame(raf);
+    // return () => {
+    //   lenis?.destroy?.();
+    // };
   }, []);
   return (
     <AuthProvider>
