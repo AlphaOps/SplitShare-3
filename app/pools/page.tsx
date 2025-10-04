@@ -226,7 +226,7 @@ function PoolsContent() {
                   )}
 
                   {/* Action Button */}
-                  {pool.status === 'open' && pool.members.length < pool.maxMembers && (
+                  {(pool.status === 'open' || pool.status === 'draft') && pool.members.length < pool.maxMembers && (
                     <NeonButton 
                       onClick={() => joinPool(pool._id)}
                       className="w-full"
