@@ -758,10 +758,12 @@ function getDemandMultiplier(subscriptionId: string): number {
 }
 
 // Initialize database and start server
-const port = process.env.PORT || 4000;
+const port = parseInt(process.env.PORT || '4000', 10);
+const host = '0.0.0.0'; // Listen on all network interfaces for Render
+
 connectDB().then(() => {
-  app.listen(port, () => {
-    console.log(`🚀 SplitShare Backend running on http://localhost:${port}`);
+  app.listen(port, host, () => {
+    console.log(`🚀 SplitShare Backend running on http://${host}:${port}`);
     console.log(`📊 Database: MongoDB`);
     console.log(`🔐 Authentication: JWT`);
     console.log(`🤖 AI Features: Enabled`);
