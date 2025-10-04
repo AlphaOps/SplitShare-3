@@ -50,32 +50,9 @@ function PoolsContent() {
     }
   };
 
-  const joinPool = async (poolId: string) => {
-    try {
-      const userId = localStorage.getItem('userId') || 'user_' + Date.now();
-      const res = await fetch(`/api/pools/${poolId}/join`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId })
-      });
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      const data = await res.json();
-      if (data.success) {
-        alert('Successfully joined pool!');
-        fetchPools();
-      } else {
-        alert(data.error || 'Failed to join pool');
-      }
-    } catch (error) {
-      console.error('Join pool error:', error);
-      if (error instanceof TypeError && error.message.includes('fetch')) {
-        alert('Unable to connect to server. Please check your internet connection.');
-      } else {
-        alert('Failed to join pool. Please try again.');
-      }
-    }
+  const joinPool = (poolId: string) => {
+    // Redirect to checkout page for payment
+    window.location.href = `/pools/${poolId}/checkout`;
   };
 
   const getStatusColor = (status: string) => {

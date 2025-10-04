@@ -41,6 +41,22 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Get single pool by ID
+router.get('/:poolId', async (req, res) => {
+  try {
+    const { poolId } = req.params;
+    const db = await getDb();
+    const pool = await db.collection(COLLECTIONS.pools).findOne({ _id: new ObjectId(poolId) });
+    if (!pool) {
+      return res.status(404).json({ error: 'Pool not found' });
+    }
+    return res.json({ success: true, pool });
+  } catch (e) {
+    console.error('Get pool error', e);
+    return res.status(500).json({ error: 'Failed to fetch pool' });
+  }
+});
+
 // List pools (optionally by platform)
 router.get('/', async (req, res) => {
   try {
