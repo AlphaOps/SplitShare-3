@@ -16,7 +16,13 @@ import rentalsRouter from './rentalsAPI';
 import instantRouter from './instantAPI';
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'https://splitsharee.netlify.app'
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 // Mount all routers
