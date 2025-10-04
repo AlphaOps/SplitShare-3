@@ -5,8 +5,11 @@
 
 import { Router } from 'express';
 import crypto from 'crypto';
-import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 import { MongoClient, Db } from 'mongodb';
+
+// Initialize SendGrid
+sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
 
 const router = Router();
 
@@ -42,38 +45,56 @@ function generateOTP(): string {
 }
 
 /**
- * Send OTP via email (placeholder - integrate with nodemailer/SendGrid)
+ * Send OTP via email using SendGrid
  */
 async function sendOTPEmail(email: string, otp: string): Promise<boolean> {
   try {
     console.log(`[OTP] Sending OTP to ${email}: ${otp}`);
     
-    // In production, use nodemailer or SendGrid:
-    /*
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
-      }
-    });
-
-    await transporter.sendMail({
-      from: 'noreply@splitshare.com',
+    const msg = {
       to: email,
+      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@splitshare.com',
       subject: 'Verify Your Email - SplitShare',
       html: `
-        <h2>Email Verification</h2>
-        <p>Your OTP code is: <strong>${otp}</strong></p>
-        <p>This code will expire in 2 minutes.</p>
-        <p>If you didn't request this, please ignore this email.</p>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .otp-box { background: white; border: 2px dashed #667eea; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 8px; margin: 20px 0; border-radius: 8px; }
+            .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🔐 Email Verification</h1>
+            </div>
+            <div class="content">
+              <p>Hello!</p>
+              <p>Thank you for signing up with SplitShare. To complete your registration, please use the following One-Time Password (OTP):</p>
+              <div class="otp-box">${otp}</div>
+              <p><strong>⏰ This code will expire in 2 minutes.</strong></p>
+              <p>If you didn't request this verification, please ignore this email.</p>
+              <p>Best regards,<br>The SplitShare Team</p>
+            </div>
+            <div class="footer">
+              <p>This is an automated message, please do not reply.</p>
+            </div>
+          </div>
+        </body>
+        </html>
       `
-    });
-    */
+    };
 
+    await sgMail.send(msg);
+    console.log(`[OTP] Email sent successfully to ${email}`);
     return true;
   } catch (error) {
-    console.error('Failed to send OTP:', error);
+    console.error('[OTP] Failed to send email:', error);
     return false;
   }
 }

@@ -14,6 +14,7 @@
   "dependencies": {
     "@react-three/drei": "9.105.6",
     "@react-three/fiber": "8.15.19",
+    "@sendgrid/mail": "^8.1.6",
     "bcryptjs": "2.4.3",
     "clsx": "2.1.1",
     "cors": "2.8.5",
