@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "dev:server": "tsx backend/server.ts"
+    "dev:server": "tsx backend/server.ts",
+    "start:server": "node --loader tsx backend/server.ts"
   },
   "dependencies": {
     "@react-three/drei": "9.105.6",
@@ -30,6 +31,7 @@
     "react-dom": "18.3.1",
     "tailwindcss": "3.4.13",
     "three": "0.160.0",
+    "tsx": "4.19.1",
     "zustand": "4.5.2"
   },
   "devDependencies": {
@@ -48,7 +50,6 @@
     "postcss": "8.4.47",
     "tailwind-scrollbar": "3.1.0",
     "tailwindcss-animate": "1.0.7",
-    "tsx": "4.19.1",
     "typescript": "5.6.3"
   }
 }
