@@ -115,13 +115,21 @@ router.post('/send-otp', async (req, res) => {
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes
 
-    // Store OTP
-    otpStore.set(email, {
-      email,
-      otp,
-      expiresAt,
-      attempts: 0
-    });
+    // Store OTP in MongoDB
+    const otps = db.collection('otps');
+    await otps.updateOne(
+      { email },
+      {
+        $set: {
+          email,
+          otp,
+          expiresAt,
+          attempts: 0,
+          createdAt: new Date()
+        }
+      },
+      { upsert: true }
+    );
 
     // Send OTP via email
     const sent = await sendOTPEmail(email, otp);
@@ -153,8 +161,9 @@ router.post('/verify-otp', async (req, res) => {
       return res.status(400).json({ error: 'Email and OTP are required' });
     }
 
-    // Get stored OTP
-    const record = otpStore.get(email);
+    // Get stored OTP from MongoDB
+    const otps = db.collection('otps');
+    const record = await otps.findOne({ email });
 
     if (!record) {
       return res.status(400).json({ error: 'No OTP found. Please request a new one.' });
@@ -162,27 +171,27 @@ router.post('/verify-otp', async (req, res) => {
 
     // Check if expired
     if (new Date() > record.expiresAt) {
-      otpStore.delete(email);
+      await otps.deleteOne({ email });
       return res.status(400).json({ error: 'OTP has expired. Please request a new one.' });
     }
 
     // Check attempts
     if (record.attempts >= 3) {
-      otpStore.delete(email);
+      await otps.deleteOne({ email });
       return res.status(400).json({ error: 'Too many failed attempts. Please request a new OTP.' });
     }
 
     // Verify OTP
     if (record.otp !== otp) {
-      record.attempts++;
+      await otps.updateOne({ email }, { $inc: { attempts: 1 } });
       return res.status(400).json({ 
         error: 'Invalid OTP. Please try again.',
-        attemptsLeft: 3 - record.attempts
+        attemptsLeft: 3 - (record.attempts + 1)
       });
     }
 
     // OTP verified successfully
-    otpStore.delete(email);
+    await otps.deleteOne({ email });
 
     // In production: Update user's emailVerified status in database
     // await db.users.update({ email }, { emailVerified: true });
@@ -221,13 +230,21 @@ router.post('/resend-otp', async (req, res) => {
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes
 
-    // Store new OTP
-    otpStore.set(email, {
-      email,
-      otp,
-      expiresAt,
-      attempts: 0
-    });
+    // Store new OTP in MongoDB
+    const otps = db.collection('otps');
+    await otps.updateOne(
+      { email },
+      {
+        $set: {
+          email,
+          otp,
+          expiresAt,
+          attempts: 0,
+          createdAt: new Date()
+        }
+      },
+      { upsert: true }
+    );
 
     // Send OTP via email
     const sent = await sendOTPEmail(email, otp);
@@ -248,25 +265,23 @@ router.post('/resend-otp', async (req, res) => {
 });
 
 /**
- * Cleanup expired OTPs (run as cron job)
+ * Cleanup expired OTPs (run periodically)
  */
-export function cleanupExpiredOTPs() {
-  const now = new Date();
-  let cleanedCount = 0;
-
-  for (const [email, record] of otpStore.entries()) {
-    if (now > record.expiresAt) {
-      otpStore.delete(email);
-      cleanedCount++;
+async function cleanupExpiredOTPs() {
+  try {
+    const now = new Date();
+    const otps = db.collection('otps');
+    const result = await otps.deleteMany({ expiresAt: { $lt: now } });
+    
+    if (result.deletedCount > 0) {
+      console.log(`[OTP] Cleaned up ${result.deletedCount} expired OTPs`);
     }
-  }
-
-  if (cleanedCount > 0) {
-    console.log(`[OTP] Cleaned up ${cleanedCount} expired OTPs`);
+  } catch (error) {
+    console.error('[OTP] Cleanup error:', error);
   }
 }
 
-// Run cleanup every minute
-setInterval(cleanupExpiredOTPs, 60 * 1000);
+// Run cleanup every 5 minutes
+setInterval(cleanupExpiredOTPs, 5 * 60 * 1000);
 
 export default router;
