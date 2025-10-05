@@ -23,12 +23,20 @@ export default function PoolCheckoutPage({ params }: { params: Promise<{ poolId:
   const fetchPoolDetails = async () => {
     try {
       const res = await fetch(`/api/pools/${poolId}`);
-      if (!res.ok) throw new Error('Failed to fetch pool details');
       const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to fetch pool details');
+      }
+      
+      if (!data.pool) {
+        throw new Error('Pool not found');
+      }
+      
       setPool(data.pool);
     } catch (error) {
       console.error('Error fetching pool:', error);
-      setError('Failed to load pool details');
+      setError(error instanceof Error ? error.message : 'Failed to load pool details');
     } finally {
       setLoading(false);
     }
